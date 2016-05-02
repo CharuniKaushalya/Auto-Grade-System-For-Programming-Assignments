@@ -10,46 +10,45 @@ use Illuminate\Http\Request;
 use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
 
 class AssignmentController extends Controller
-{
+{/*... ...*/
 	use Functions;
 
 	public function index(){
-		$assignments = Assignment::get();
-		$privileges = $this->getPrivileges();
+		$assignments = Assignment::get(); /*...get all assignments from the database...*/
+		$privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
 		return view('assignment.index',compact('assignments','privileges'))->with('page','Assignments');
 
 	}
 
 	public function insert(){
-		$privileges = $this->getPrivileges();
+		$privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
 		return view('assignment.insert',compact('privileges'))->with('page','Add Assignment');
 
 	}
 
 	public function postInsert(Request $request){
-		$data = $request->all();
-		$arry=explode( "\r\n", $data['myinput'] );
-		$input = "";$output = "";
-		for ($i = 0; $i < count($arry); $i++) 
-	   {
-	       $input .= $arry[$i]."<br/>";
-	      
-	   }
+		$data = $request->all(); /*...get all user input data...*/
+    $input = $this->addLineBreakTeaxtArea($data['input']);/*...Add input with line break...*/
+    $output = $this->addLineBreakTeaxtArea($data['output']);/*...Add output with line break...*/
+    
 
-		$validator = $this->validateAssignment($request->all());
+		/*...Check for form validation...*/
+    $validator = $this->validateAssignment($request->all());
 
-	    if ($validator->fails()) {
+	    /*...If validation fails redirect to current page with errors...*/
+      if ($validator->fails()) {
 	        $this->throwValidationException(
 	            $request, $validator
 	        );
 	    }
 		
-		$slug = $this->slugGenerator(strtolower($data['title']));
+    $slug = $this->slugGenerator(strtolower($data['title']));/*...Generate url...*/
+    /*...Save data into database...*/
 		Assignment::create([
             	'title' => ucwords($data['title']),
            		'description' => $data['editor'],
            		'input' => $input,
-           		'output' => $data['output'],
+           		'output' => $output,
             	'slug' => $slug,
             	'assignment_type_id' => $data['type']
             
@@ -57,19 +56,24 @@ class AssignmentController extends Controller
 		return redirect('assignment_insert')->with('message','Data have been send to the database successfully');
 	}
 
-	protected function validateAssignment(array $data){
+	/*...Validation rules...*/
+  protected function validateAssignment(array $data){
         return Validator::make($data, [
             'title' => 'required|max:255',
+            'input' => 'required',
+            'output' => 'required',
         ]);
     }
 
-
+  /*...View assignment in details...*/
 	public function show($id){
-		$assignment = Assignment::find($id);
+		$assignment = Assignment::find($id);/*...Get details of assginment from database relevant id...*/
 		return view('assignment.show',compact('assignment'))->with('page','View Assignment - '.$id)
 		->with('privileges',$this->getPrivileges());
 
 	}
+
+
 
 	public function runcode($id,Request $request){
 		//dd($request->all());
