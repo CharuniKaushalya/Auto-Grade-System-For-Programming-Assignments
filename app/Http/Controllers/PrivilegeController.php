@@ -13,33 +13,36 @@ use App\Http\Controllers\Functions;
 use Auth;
 
 class PrivilegeController extends Controller
-{
+{/*... ...*/
     use Functions;
     public function users()
     {
-        $users = User::where('role_id', '!=' , 1)->get();
+        $users = User::where('role_id', '!=' , 1)->get();/*...Get all the users whose role_id is nt equals to one...*/
         return view('auth.index',compact('users'))
             ->with('page','Users')
             ->with('privileges',$this->getPrivileges());
     }
 	
     public function insert(){
-		$privileges = Role::find(Auth::user()->role_id)->privilages()->get();
+		$privileges = Role::find(Auth::user()->role_id)->privilages()->get();/*...Get all the privileges for relevant user...*/
 		return view('privilege.insert')->with('page','Add Privilege')->with('privileges',$this->getPrivileges());
 	}
 	public function postInsert(Request $request){
 		
 		if($request->get('submit')){
-			$validator = $this->validatePrivilege($request->all());
+            /*...Check for form validation...*/
+            $validator = $this->validatePrivilege($request->all());
 
-	        if ($validator->fails()) {
-	            $this->throwValidationException(
-	                $request, $validator
-	            );
-	        }
+            /*...If validation fails redirect to current page with errors...*/
+            if ($validator->fails()) {
+                $this->throwValidationException(
+                    $request, $validator
+                );
+            }
 							
-			$data = $request->all();
-			$slug = $this->slugGenerator(strtolower($data['title']));
+			$data = $request->all();/*...Get all user inputs...*/
+			$slug = $this->slugGenerator(strtolower($data['title']));/*...Generate Url...*/
+            /*...Save data into the database...*/
 			Privilege::create([
 	            'name' => ucfirst($data['title']),
 	            'description' => ucfirst($data['description']),
@@ -52,6 +55,7 @@ class PrivilegeController extends Controller
 			->with('message', 'The data have been save to the database successfully');
 	}
 
+    /*...Validation rules...*/
 	protected function validatePrivilege(array $data){
         return Validator::make($data, [
             'title' => 'required|max:255|min:6',
@@ -84,30 +88,35 @@ class PrivilegeController extends Controller
     }
     public function postStaffRegister(Request $request){
         if($request->get('submit')){
-		$validator = $this->validateRegister($request->all());
+            /*...Check for form validation...*/
+            $validator = $this->validateRegister($request->all());
 
+            /*...If validation fails redirect to current page with errors...*/
 	        if ($validator->fails()) {
 	            $this->throwValidationException(
 	                $request, $validator
 	            );
 	        }
-		$data = $request->all();
-		$confirmation_code = str_random(30); 
+		$data = $request->all();/*...Get all user inputs...*/
+		$confirmation_code = str_random(30); /*...Create confimation code...*/
 		$data1 = [
 			'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
             'confirmation_code' => $confirmation_code
         ];
+        /*...Send an email to user...*/
         Mail::send('emails.staff', $data1, function ($m) use ($data) {
             $m->to($data['email'], $data['name'])->subject("registration");
         });
 
-        
+        /*...Save the image...*/
 	        $imageName = $data['name']. '.' . 
         	$request->file('image')->getClientOriginalExtension();
         	$request->file('image')->move(
         	base_path() . '/public/img/Users/Employee/', $imageName);
+
+            /*...Save the data into the database...*/
 			User::create([
             	'full_name' => $data['name'],
            		'user_name' => $data['name'],
@@ -129,6 +138,7 @@ class PrivilegeController extends Controller
 		return redirect('staff_register');
     }
 
+    /*...Validation rules...*/
     protected function validateRegister(array $data){
         return Validator::make($data, [
             'name' => 'required|max:255',
@@ -138,6 +148,7 @@ class PrivilegeController extends Controller
         ]);
     }
     
+    /*...View all the privileges in tabulation...*/
     public function viewPrevileges(){
       	$Tprivileges = Privilege::get();
       	return view('privilege.index',compact('Tprivileges'))
