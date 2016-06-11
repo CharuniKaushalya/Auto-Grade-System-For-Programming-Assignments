@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
             <div class="row">
-                <div class="col-md-4 col-md-offset-4">
+                <div class="col-md-5 col-md-offset-4">
                     <div class="panel panel-default" style="border: 2px solid #014202;   position: relative;top: 100px;">
                         <div class="panel-heading" style="background:#014202;text-align:center;color: #fff;border: 1px solid #014202;font-size: 20px;text-transform: uppercase;font-weight: 300;">Login</div>
                         <div class="panel-body">
@@ -52,7 +52,7 @@
 
                                 <div class="form-group">
                                     <div class="col-md-2 col-md-offset-2">
-                                        <button type="submit" class="btn btn-theme ">
+                                        <button type="submit" class="btn btn-theme " name="Login">
                                             <i class="fa fa-btn fa-sign-in"></i> Login
                                         </button>
 

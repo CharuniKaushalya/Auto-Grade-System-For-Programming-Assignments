@@ -78,7 +78,7 @@
 
                         <div class="form-group">
                             <div class="col-md-8 col-md-offset-4">
-                                <button type="submit" class="btn btn-theme ">
+                                <button type="submit" class="btn btn-theme " name="Register">
                                     <i class="fa fa-btn fa-user"></i> Register
                                 </button>
                             </div>

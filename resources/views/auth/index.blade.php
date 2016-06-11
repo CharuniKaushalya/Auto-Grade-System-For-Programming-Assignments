@@ -32,7 +32,7 @@
                                         <div class="col-md-4">
                                             <div class="list-group border-bottom">
                                                 <a href="#" class="list-group-item" onClick ="$('#customers').tableExport({type:'png',escape:'false'});"><img src='img/icons/png.png' width="24"/> PNG</a>
-                                                <a href="#" class="list-group-item" onClick ="$('#customers').tableExport({type:'pdf',escape:'false'});"><img src='img/icons/pdf.png' width="24"/> PDF</a>
+                                                <a href="#" class="list-group-item" onclick="generate()"><img src='img/icons/pdf.png' width="24"/> PDF</a>
                                             </div>
                                         </div>
                                     </div>                               
@@ -46,6 +46,8 @@
                                                 <th>Description</th>
                                                 <th>Create Date</th>
                                                 <th>Last Update</th>
+                                                <th>Update</th>
+                                                <th>Delete</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -56,6 +58,8 @@
                                                 <td>{{ $user->email }}</td>
                                                 <td>{{ $user->created_at }}</td>
                                                 <td>{{ $user->updated_at }}</td>
+                                                <td>Update<img style="height:60px;width:50px;" src='img/icons/update3.jpg'></td>
+                                                <td><img style="height:60px;width:50px;" src='img/icons/Delete_icon2.png'></td>
                                             </tr>
 						                    @endforeach 
                                         </tbody>
