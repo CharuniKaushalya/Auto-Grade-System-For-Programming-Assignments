@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests;
 use Validator;
 use Mail;
+use App\User;
+use App\Language;
+use Auth;
+use DB;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -42,9 +46,21 @@ class HomeController extends Controller
     }
     public function admin()
     {
-        return view('layouts.admin')
-            ->with('page','Dashboard')
+        $user = User::find(Auth::user()->id);
+         if($user){
+            $languages = Language::get();
+        $assignments = DB::table('assignment')
+        ->Join('users_has_assignment',  'assignment.id', '=','users_has_assignment.assignment_id' )
+        ->where('users_has_assignment.users_id', '=', Auth::user()->id)
+        ->get();
+        //dd($assignments);
+        /*...Get all the assignmnets submittedby the student*/
+       
+        return view('auth.dashboard',compact('assignments','user','languages'))
+            ->with('page','My Profile')
             ->with('privileges',$this->getPrivileges());
+        }return view('errors.404');
+
     }
 
     protected function validateContace(array $data){
@@ -82,5 +98,9 @@ class HomeController extends Controller
         return redirect('contact')
                 ->with('message', 'Your message have been send.. Thank you!!');
 
+    }
+    public function postLanguages()
+    {
+        return view('pages.contact');
     }
 }

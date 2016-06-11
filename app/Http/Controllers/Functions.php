@@ -14,4 +14,15 @@ trait Functions
    		return $slug;
 	}
 
+	protected function addLineBreakTeaxtArea($str){
+		$arry=explode( "\r\n", $str );
+    	$input = "";
+		for ($i = 0; $i < count($arry); $i++) 
+	   {
+	       $input .= $arry[$i]."<br/>";
+	      
+	   }
+	   return $input;
+  	}
+
 }

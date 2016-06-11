@@ -47,6 +47,7 @@ class CompileController extends Controller
 
       $run = true;
       $private = false;
+      /*...Sub stataus given by the compilation process...*/
       $subStatus = array(
             0 => 'Success',
             1 => 'Compiled',
@@ -121,29 +122,21 @@ class CompileController extends Controller
                 }
                 
                 return json_encode( $data );
-                    //dd($details);
-                    //$details = $client->getSubmissionDetails($user, $pass, $result['link'], true, true, true, true, true);
-                    //$mydetails =  $details;
-                   //echo json_encode( $details );
-                   // echo json_encode( $details );
-
-                   /* return redirect()->back()
-                      ->withInput($request->all())
-                      ->with('details',$details)
-                      ->with('status',$status);*/
+                 
                 } else {
                     //we got some error :(
                     //print_r( $details );
-                  //echo json_encode( $error );
-                  //return redirect('assignment_'.$data['id'])->with('error',$error);
-                	//echo json_encode( $error );
                 }
               
           }
         }else{
+          //we got some error :(
+                    //print_r( $details );
          // return redirect('assignment_'.$data['id'])->with('error',$error);
         }
       } else {
+        //we got some error :(
+                    //print_r( $details );
        // return redirect('assignment_'.$data['id'])->with('error',$error);
       }
 	}

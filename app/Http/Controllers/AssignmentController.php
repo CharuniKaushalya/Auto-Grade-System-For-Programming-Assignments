@@ -5,7 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests;
 use Validator;
 use Mail;
+use Auth;
 use App\Assignment;
+use App\TestCase;
+use App\Language;
+use App\Comment;
+use App\UserAssignment;
 use Illuminate\Http\Request;
 use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
 
@@ -27,34 +32,8 @@ class AssignmentController extends Controller
 	}
 
 	public function postInsert(Request $request){
-		$data = $request->all(); /*...get all user input data...*/
-    $input = $this->addLineBreakTeaxtArea($data['input']);/*...Add input with line break...*/
-    $output = $this->addLineBreakTeaxtArea($data['output']);/*...Add output with line break...*/
-    
-
-		/*...Check for form validation...*/
-    $validator = $this->validateAssignment($request->all());
-
-	    /*...If validation fails redirect to current page with errors...*/
-      if ($validator->fails()) {
-	        $this->throwValidationException(
-	            $request, $validator
-	        );
-	    }
 		
-    $slug = $this->slugGenerator(strtolower($data['title']));/*...Generate url...*/
-    /*...Save data into database...*/
-		Assignment::create([
-            	'title' => ucwords($data['title']),
-           		'description' => $data['editor'],
-           		'input' => $input,
-           		'output' => $output,
-            	'slug' => $slug,
-            	'assignment_type_id' => $data['type']
-            
-        ]);
-		return redirect('assignment_insert')->with('message','Data have been send to the database successfully');
-	}
+    }
 
 	/*...Validation rules...*/
   protected function validateAssignment(array $data){
@@ -67,15 +46,158 @@ class AssignmentController extends Controller
 
   /*...View assignment in details...*/
 	public function show($id){
+    if(Auth::check()){
 		$assignment = Assignment::find($id);/*...Get details of assginment from database relevant id...*/
-		return view('assignment.show',compact('assignment'))->with('page','View Assignment - '.$id)
-		->with('privileges',$this->getPrivileges());
+    $test = TestCase::whereassignment_id($id)->get();
+    $submit = UserAssignment::whereassignment_id($id)->whereusers_id(Auth::user()->id)->get();
+    $languages = Language::get();
+    //dd($submit);
+    
+    if ($submit === null) {
+       // user doesn't submit
+      return view('assignment.show',compact('assignment','test','id','languages'))->with('page','View Assignment - '.$id)
+    ->with('privileges',$this->getPrivileges());
+    }
+    return view('assignment.show',compact('assignment','test','id','submit','languages'))->with('page','View Assignment - '.$id)
+    ->with('privileges',$this->getPrivileges());
+  }return view('errors.404');
+		
 
 	}
+  public function getMarks(){
+    return view('assignment.marks-test')->with('page','View Assignment - ')
+    ->with('privileges',$this->getPrivileges());
+
+  }
 
 
+  public function saveMarks($id){
+   $lang = isset( $_POST['lang'] ) ? intval( $_POST['lang'] ) : 1;
+      $code = trim(stripslashes( $_POST['source'] ));
+      $mark = intval( $_POST['mark'] ) ;
+      $saved = UserAssignment::create([
+              'users_id' => Auth::user()->id,
+              'assignment_id' => $id,
+              'marks' => $mark,
+              'lang_id' => $lang,
+              'source' => $code
+            
+        ]);
+      return 0;
+   
+    
+  }
+  public function runcode($id,Request $request){
+    /* $data = $request->all();
+    $source = (string)$data['source'];
+    $lang = $data['lang'];
+    $test = TestCase::whereassignment_id($id)->get();
+    if(isset($data['submit23'])){
+     //dd( $data);
+      //return view('assignment.marks',compact('source','test','lang'))->with('privileges',$this->getPrivileges());;
+    }*/
+  }
 
-	public function runcode($id,Request $request){
+  public function update($id){
+    if(Auth::check()){
+    $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
+    $assignment = Assignment::find($id);
+    return view('assignment.edit',compact('privileges','assignment'))->with('page','Update Assignment ');
+    }return view('errors.404');
+  }
+  public function postUpdate($id,Request $request){
+    $data = $request->all(); /*...get all user input data...*/
+    /*...Check for form validation...*/
+    $validator = $this->validation($request->all());
+
+      /*...If validation fails redirect to current page with errors...*/
+      if ($validator->fails()) {
+          $this->throwValidationException(
+              $request, $validator
+          );
+      }
+    /*...Save data into database...*/
+    $assignment = Assignment::whereid($id)->first();
+    $assignment->title = ucwords($data['title']);
+    $assignment->description = $data['editor'];
+    $assignment->assignment_type_id = $data['type'];
+    $assignment->save();
+            
+    return redirect('assignmentEdit_'.$id)->with('message','Data have been updated successfully');
+  
+
+  }
+
+  /*...Validation rules...*/
+  protected function validation(array $data){
+        return Validator::make($data, [
+            'title' => 'required|max:255',
+        ]);
+    }
+
+    
+  public function viewAnswers($id){
+    if(Auth::check()){
+    $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
+    $languages = Language::get();
+    $assignments = UserAssignment::whereassignment_id($id)
+    ->join('users', 'users_has_assignment.users_id', '=', 'users.id')
+    ->get();
+    return view('assignment.answers',compact('privileges','assignments','languages'))->with('page','View Students Answers ');
+    }return view('errors.404');
+  }
+
+  public function leaderboard($id){
+    if(Auth::check()){
+    $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
+    $languages = Language::get();
+    $assignments = UserAssignment::whereassignment_id($id)
+    ->join('users', 'users_has_assignment.users_id', '=', 'users.id')
+    ->orderBy('marks', 'desc')
+    ->get();
+    return view('assignment.leaderboard',compact('privileges','assignments','languages'))->with('page','Leaderboard ');
+    }return view('auth.login');
+  }
+
+  public function submission($id){
+    if(Auth::check()){
+    $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
+    $languages = Language::get();
+    $assignments = UserAssignment::whereassignment_id($id)
+    ->whereusers_id(Auth::user()->id)
+    ->orderBy('created_at', 'desc')
+    ->get();
+    return view('assignment.submission',compact('privileges','assignments','languages'))->with('page','Submisssions ');
+    }return view('auth.login');
+  }
+
+  public function disscusion($id){
+    if(Auth::check()){
+       $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
+      $comments = Comment::whereassignment_id($id)
+       ->join('users', 'comment.users_id', '=', 'users.id')
+    ->get();
+   // dd($comments);
+    return view('assignment.disscusion',compact('privileges','comments'))->with('page','disscusion ');
+
+
+    }return view('auth.login');
+  }
+public function postDisscusion($id,Request $request){
+  $data = $request->all();
+  $this->validate($request, [
+      'comment' => 'required',
+  ]);
+  $comment = new Comment;
+  $comment->comment = $data['comment'];
+  $comment->assignment_id = $id;
+  $comment->users_id = Auth::user()->id;
+  $comment->save();
+  return redirect('discussion_'.$id);
+
+}
+
+	public function runcodep($id,Request $request){
 		//dd($request->all());
 		$data = $request->all();
     $data['id'] = $id;

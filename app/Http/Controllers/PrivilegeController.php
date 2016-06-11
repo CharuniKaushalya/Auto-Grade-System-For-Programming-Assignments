@@ -7,6 +7,7 @@ use Validator;
 use Mail;
 use App\Privilege;
 use App\User;
+use App\Language;
 use App\Role;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Functions;
@@ -156,5 +157,8 @@ class PrivilegeController extends Controller
             ->with('privileges',$this->getPrivileges());
      }
 
+    
+
+    
 	
 }
