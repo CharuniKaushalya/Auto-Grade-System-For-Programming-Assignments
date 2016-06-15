@@ -32,6 +32,52 @@ class AssignmentController extends Controller
 	}
 
 	public function postInsert(Request $request){
+    $data = $request->all(); /*...get all user input data...*/
+    //dd($data);
+    $arry1=explode( "\r\n", $data['input'] );
+    $arry2=explode( "\r\n", $data['input'] );
+    $input = "";$output = "";
+    for ($i = 0; $i < count($arry1); $i++) 
+     {
+         $input .= $arry1[$i]."<br/>";/*...break input by adding <br> tag...*/
+         $output .= $arry2[$i]."<br/>";/*...break output lines by adding <br> tag...*/
+        
+     }
+
+    /*...call validate input data...*/
+    $validator = $this->validateAssignment($request->all());
+
+      if ($validator->fails()) {
+          $this->throwValidationException(
+              $request, $validator
+          );
+      }
+    
+    /*...generate url for assignment...*/
+    $slug = $this->slugGenerator(strtolower($data['title']));
+    /*...insert data into assignment table...*/
+    /*...get id of saved assignment...*/
+    $id = Assignment::create([
+              'title' => ucwords($data['title']),
+              'description' => $data['editor'],
+              'input' => $input,
+              'output' => $data['output'],
+              'slug' => $slug,
+              'assignment_type_id' => $data['type']
+            
+        ])->id;
+
+    /*...save test cases for assignment...*/
+    foreach ($data['test'] as $key => $value) {
+      # code...
+      TestCase::create([
+        'input' => $value['input'],
+        'output' => $value['output'],
+        'assignment_id' => $id
+        ]);
+    }
+    return redirect('assignment_insert')->with('message','Data have been send to the database successfully');
+
 		
     }
 
@@ -46,23 +92,25 @@ class AssignmentController extends Controller
 
   /*...View assignment in details...*/
 	public function show($id){
-    if(Auth::check()){
-		$assignment = Assignment::find($id);/*...Get details of assginment from database relevant id...*/
-    $test = TestCase::whereassignment_id($id)->get();
-    $submit = UserAssignment::whereassignment_id($id)->whereusers_id(Auth::user()->id)->get();
-    $languages = Language::get();
-    //dd($submit);
-    
-    if ($submit === null) {
-       // user doesn't submit
-      return view('assignment.show',compact('assignment','test','id','languages'))->with('page','View Assignment - '.$id)
-    ->with('privileges',$this->getPrivileges());
-    }
-    return view('assignment.show',compact('assignment','test','id','submit','languages'))->with('page','View Assignment - '.$id)
-    ->with('privileges',$this->getPrivileges());
-  }return view('errors.404');
-		
 
+    /*...check if there is login session...*/
+    if(Auth::check()){
+  		$assignment = Assignment::find($id);/*...Get details of assginment from database relevant id...*/
+      $test = TestCase::whereassignment_id($id)->get();/*...get all test cases for assignment...*/
+      /*...check whether this assigment has been submit at least once by  the lgin user...*/
+      $submit = UserAssignment::whereassignment_id($id)->whereusers_id(Auth::user()->id)->get();
+      $languages = Language::get();/*...get all programming languages support by this system...*/
+      //dd($submit);
+      
+      if ($submit === null) {
+         // user doesn't submit
+        return view('assignment.show',compact('assignment','test','id','languages'))->with('page','View Assignment - '.$id)
+      ->with('privileges',$this->getPrivileges());
+      }
+      return view('assignment.show',compact('assignment','test','id','submit','languages'))->with('page','View Assignment - '.$id)
+      ->with('privileges',$this->getPrivileges());
+    }return view('errors.404');
+		
 	}
   public function getMarks(){
     return view('assignment.marks-test')->with('page','View Assignment - ')
@@ -70,7 +118,7 @@ class AssignmentController extends Controller
 
   }
 
-
+  /*...saved marks for submitted assignment..*/
   public function saveMarks($id){
    $lang = isset( $_POST['lang'] ) ? intval( $_POST['lang'] ) : 1;
       $code = trim(stripslashes( $_POST['source'] ));
@@ -98,13 +146,16 @@ class AssignmentController extends Controller
     }*/
   }
 
+  /*...get update page for specific assignment details...*/
   public function update($id){
     if(Auth::check()){
     $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
-    $assignment = Assignment::find($id);
+    $assignment = Assignment::find($id);/*...get details of assignment ...*/
     return view('assignment.edit',compact('privileges','assignment'))->with('page','Update Assignment ');
     }return view('errors.404');
   }
+
+  /*...saved updated assignment details in to the database...*/
   public function postUpdate($id,Request $request){
     $data = $request->all(); /*...get all user input data...*/
     /*...Check for form validation...*/
@@ -135,22 +186,49 @@ class AssignmentController extends Controller
         ]);
     }
 
-    
+  /*...view all answers submitted by student...*/  
   public function viewAnswers($id){
     if(Auth::check()){
     $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
-    $languages = Language::get();
+    $languages = Language::get();/*...get all user input data...*/
     $assignments = UserAssignment::whereassignment_id($id)
-    ->join('users', 'users_has_assignment.users_id', '=', 'users.id')
+    ->join('users', 'users.id', '=', 'users_has_assignment.users_id' )
+    ->where('users_has_assignment.assignment_id' ,'=', $id)
     ->get();
+   //dd($assignments);
     return view('assignment.answers',compact('privileges','assignments','languages'))->with('page','View Students Answers ');
-    }return view('errors.404');
+    }return view('auth.login');
   }
 
+  /*...view details of  the answe...*/
+  public function modalAnswer($id,$sid)
+  {
+        $user = UserAssignment::whereusers_id($id)->whereassignment_id($sid)->first();
+
+        return view('assignment.answer-modal', compact('user'));
+  }
+
+  /*...saved feedback provided by lecturers to the database ...*/
+  public function postModalAnswer(Request $request)
+  {
+      $data = $request->all();/*...Get all user inputs...*/
+      //dd($data);
+      /*...save data in the database...*/
+            $product = UserAssignment::whereusers_id($request->get('id'))
+            ->whereassignment_id($data['assignment_id'])
+            ->first();
+            $product->feedback =  $request->get('feedback');
+            $product->save();
+      return redirect('assignmentView_'.$data['assignment_id']);
+  }
+
+  /*...view rank of each student for assignment...*/
   public function leaderboard($id){
+
     if(Auth::check()){
     $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
-    $languages = Language::get();
+    $languages = Language::get();/*...get all languages...*/
+    /*...get assignments and submitted user details...*/
     $assignments = UserAssignment::whereassignment_id($id)
     ->join('users', 'users_has_assignment.users_id', '=', 'users.id')
     ->orderBy('marks', 'desc')
@@ -159,10 +237,12 @@ class AssignmentController extends Controller
     }return view('auth.login');
   }
 
+  /*...get details of all submisons for the assignments..*/
   public function submission($id){
     if(Auth::check()){
     $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
-    $languages = Language::get();
+    $languages = Language::get();/*...get all languages...*/
+    /*...get all details of assignment and subbited users...*/
     $assignments = UserAssignment::whereassignment_id($id)
     ->whereusers_id(Auth::user()->id)
     ->orderBy('created_at', 'desc')
@@ -171,9 +251,11 @@ class AssignmentController extends Controller
     }return view('auth.login');
   }
 
+  /*...view discussion page for assignment...*/
   public function disscusion($id){
     if(Auth::check()){
-       $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/ 
+       $privileges = $this->getPrivileges(); /*...get all privileges relevent to user from the database...*/
+       /*...get currently available comments...*/ 
       $comments = Comment::whereassignment_id($id)
        ->join('users', 'comment.users_id', '=', 'users.id')
     ->get();
@@ -183,7 +265,9 @@ class AssignmentController extends Controller
 
     }return view('auth.login');
   }
-public function postDisscusion($id,Request $request){
+
+  /*...saved login user comment in to the database...*/
+  public function postDisscusion($id,Request $request){
   $data = $request->all();
   $this->validate($request, [
       'comment' => 'required',
@@ -195,9 +279,10 @@ public function postDisscusion($id,Request $request){
   $comment->save();
   return redirect('discussion_'.$id);
 
-}
+  }
 
-	public function runcodep($id,Request $request){
+
+/*	public function runcodep($id,Request $request){
 		//dd($request->all());
 		$data = $request->all();
     $data['id'] = $id;
@@ -306,10 +391,10 @@ public function postDisscusion($id,Request $request){
                     echo '</tr>';
                     echo '</table>';
 
-                   /* return redirect()->back()
-                      ->withInput($request->all())
-                      ->with('details',$details)
-                      ->with('status',$status);*/
+                   //return redirect()->back()
+                     // ->withInput($request->all())
+                     // ->with('details',$details)
+                     // ->with('status',$status);
                 } else {
                     //we got some error :(
                     //print_r( $details );
@@ -462,5 +547,5 @@ public function postDisscusion($id,Request $request){
         }
       });
   }
-
+*/
 }
