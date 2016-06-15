@@ -58,7 +58,7 @@
                                     {!! csrf_field() !!}
 
                                     <div class="input-group">                                    
-                                        <input type="text" name="comment" rows="5" class="form-control" placeholder="Type a message..."/>
+                                        <input type="text" name="comment" id="comment" rows="5" class="form-control" placeholder="Type a message..."/>
                                         <span class="input-group-btn">
                                             <button class="btn btn-default" type="submit">Send</button>
                                         </span>                                    

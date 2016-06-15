@@ -26,12 +26,7 @@
                        
                     	<div class="profile-image">
                         <h2 class="panel-title"> 
-                        		@if( $assignment->image )
-									<img src="img/Users/Employee/{{ $assignment->image }}" alt="John Doe" style="width:50px;height:50px"/>
-                                @else
-                                	<img src="img/Users/no-image.jpg" alt="John Doe" style="width:50px;height:50px"/>
-                                @endif
-                        	<strong>{{$assignment->user_name}}</strong> Answer</h2>
+                        	<strong></strong> Answer</h2>
                         </div>
                                 
                         <ul class="panel-controls">

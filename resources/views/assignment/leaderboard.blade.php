@@ -12,7 +12,7 @@
                         <div class="panel-body">
                         	<div class="pull-right">
                                     @if(Auth::check() && (Auth::user()->role_id == 2 || Auth::user()->role_id == 3 || Auth::user()->role_id == 4))
-                                        <button class="btn btn-success toggle" data-toggle="exportTable"><i class="fa fa-bars"></i> Export Data</button>
+                                        <a href="#"  class="btn btn-success toggle" data-toggle="exportTable"><i class="fa fa-bars"></i> Export Data</a>
                                     @endif
                                     </div>
                         	<div class="panel-body" id="exportTable" style="display: none;">

@@ -27,7 +27,7 @@
                             <a href="submission_{{ $assignment->id }}"><button class="btn btn-success pull-right btn-lg col-md-2-offset-1" style="margin-right:10px;">
                             <span class="fa fa-list"></span>Submissons</button></a>
                             <a href="discussion_{{ $assignment->id }}"><button class="btn btn-info pull-right btn-lg col-md-2-offset-1" style="margin-right:10px;">
-                            <span class="fa fa-comment"></span>Disscussion</button></a>
+                            <span class="fa fa-comment"></span>Discussion</button></a>
                             
                         </div>
                         <div class="panel-body">
@@ -83,49 +83,34 @@
                             <h4 class="col-md-7 col-xs-12 control-label">Select Language</h4>
                             <div class="col-md-4 col-xs-12">                                            
                                 <div>
-                                                <select name="lang" id="lang" class="form-control select full-right">
-                                                    <option value="13">Assembler (nasm-2.07)</option>
-                                                    <option value="45">Assembler (gcc-4.3.4)</option>
+                                                <select name="lang" id="lang" class="form-control select full-right" data-size="7" data-style="btn-success" data-live-search="true">
+                                                    
                                                     <option value="11">C (gcc-4.3.4)</option>
                                                     <option value="27">C# (mono-2.8)</option>
                                                     <option value="1"   selected="selected">C++ (gcc-4.3.4)</option>
                                                     <option value="44">C++0x (gcc-4.5.1)</option>
-                                                    <option value="34">C99 strict (gcc-4.3.4)</option>
-                                                    <option value="14">CLIPS (clips 6.24)</option>
-                                                    <option value="111">Clojure (clojure 1.1.0)</option>
-                                                    <option value="118">COBOL (open-cobol-1.0)</option>
-                                                    <option value="106">COBOL 85 (tinycobol-0.65.9)</option>
-                                                    <option value="32">Common Lisp (clisp) (clisp 2.47)</option>
                                                     <option value="102">D (dmd) (dmd-2.042)</option>
                                                     <option value="36">Erlang (erl-5.7.3)</option>
                                                     <option value="124">F# (fsharp-2.0.0)</option>
-                                                    <option value="123">Factor (factor-0.93)</option>
-                                                    <option value="125">Falcon (falcon-0.9.6.6)</option>
-                                                    <option value="107">Forth (gforth-0.7.0)</option>
-                                                    <option value="5">Fortran (gfortran-4.3.4)</option>
+                                                    <option value="114">Go (gc-2010-07-14)</option>
+                                                    <option value="121">Groovy (groovy-1.7)</option>
+                                                    <option value="21">Haskell (ghc-6.8.2)</option>
                                                     <option value="10">Java (sun-jdk-1.6.0.17)</option>
                                                     <option value="35">JavaScript (rhino) (rhino-1.6.5)</option>
                                                     <option value="112">JavaScript (spidermonkey) (spidermonkey-1.7)</option>
-                                                   
+                                                    <option value="26">Lua (luac 5.1.4)</option>
                                                     <option value="22">Pascal (fpc) (fpc 2.2.0)</option>
                                                     <option value="2">Pascal (gpc) (gpc 20070904)</option>
                                                     <option value="3">Perl (perl 5.12.1)</option>
                                                     <option value="54">Perl 6 (rakudo-2010.08)</option>
                                                     <option value="29">PHP (php 5.2.11)</option>
-                                                    
                                                     <option value="4">Python (python 2.6.4)</option>
                                                     <option value="116">Python 3 (python-3.1.2)</option>
                                                     <option value="117">R (R-2.11.1)</option>
                                                     <option value="17">Ruby (ruby-1.9.2)</option>
                                                     <option value="39">Scala (scala-2.8.0.final)</option>
-                                                    <option value="33">Scheme (guile) (guile 1.8.5)</option>
                                                     <option value="23">Smalltalk (gst 3.1)</option>
-                                                    <option value="40">SQL (sqlite3-3.7.3)</option>
-                                                    <option value="38">Tcl (tclsh 8.5.7)</option>
-                                                    <option value="62">Text (text 6.10)</option>
-                                                    <option value="115">Unlambda (unlambda-2.0.0)</option>
                                                     <option value="101">Visual Basic .NET (mono-2.4.2.3)</option>
-                                                    <option value="6">Whitespace (wspace 0.3)</option>
                                                 </select>
                                 </div>                                          
                             </div>
